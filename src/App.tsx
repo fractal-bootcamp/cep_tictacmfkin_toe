@@ -1,5 +1,7 @@
 import { useState } from 'react'
 import './App.css'
+import { io } from "socket.io-client";
+import { useEffect } from 'react'
 
 /*      
 1: apply either 'X' or 'O' to the area of the grid that the currentPlayer selected 
@@ -11,6 +13,12 @@ import './App.css'
 */
 
 export type Board = [0, 1, 2, 3, 4, 5, 6, 7, 8]//fix later
+
+const socket = io("http://localhost:3000")
+
+socket.on("connect", () => {
+    console.log("we are logging: ", socket.id)
+})
 
 
 
@@ -94,6 +102,9 @@ function App() { // change to app. Import/export
     const [board, setBoard] = useState(['', '', '', '', '', '', '', '', '']);
     //console.log("BOARD", board)
     const [currentPlayer, setCurrentPlayer] = useState("X");
+    const [messages, setMessages] = useState<string[]>([]);
+    const [inputMessage, setInputMessage] = useState('');
+
 
     const handleMove = (index: number) => {
         const updatedBoard = [...board]
@@ -102,6 +113,8 @@ function App() { // change to app. Import/export
             updatedBoard
         );
         currentPlayer === "X" ? setCurrentPlayer("O") : setCurrentPlayer("X")
+
+        socket.emit('chat-message', 'nice job')
     }
 
     //Define what a row should consist of
@@ -159,12 +172,39 @@ function App() { // change to app. Import/export
     //     return board[startIndex] //return board[startIndex] to return the first character of that row which will point to the winner 
     // }
 
-    console.log(winnerAll())
 
     return (
-
         <>
-            <button onClick={() => handleMove(0)}> {board[0]} </button >
+
+            <div className='bg-gray-600'>
+                <h1 >TIC-TAC-TOE</h1>
+                <div className='container mx-auto grid grid-cols-3 grid-rows-3 gap-2 w-64 h-64'>
+                    {board.map((cell, index) => {
+                        return (
+                            <div
+                                key={index}
+                                className='bg-gray-200 flex items-center justify-center text-4xl font-bold cursor-pointer hover:bg-gray-300 transition-colors duration-200 rounded-lg'
+                                onClick={() => handleMove(index)}>
+                                {cell}
+                            </div>
+                        )
+                    })}
+                </div>
+
+                {/* <div>
+                    {board.map((cell, index) => {
+                        return (
+                            <div className="rounded-lg">
+                                <button
+                                    onClick={() => handleMove(index)}>{cell}</button >
+                            </div>
+                        )
+                    })}
+                </div> */}
+
+            </div >
+
+            {/* <button onClick={() => handleMove(0)}> {board[0]} </button >
             <button onClick={() => handleMove(1)}> {board[1]}  </button >
             <button onClick={() => handleMove(2)}> {board[2]}  </button >
             <br />
@@ -174,7 +214,7 @@ function App() { // change to app. Import/export
             <br />
             <button onClick={() => handleMove(6)}> {board[6]}  </button >
             <button onClick={() => handleMove(7)}> {board[7]}  </button >
-            <button onClick={() => handleMove(8)}> {board[8]}  </button >
+            <button onClick={() => handleMove(8)}> {board[8]}  </button > */}
         </>
     )
 }
